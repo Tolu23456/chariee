@@ -61,27 +61,53 @@ const App = () => {
         body: JSON.stringify({
           model: "openai/gpt-oss-120b:free",
           messages: [{ role: "user", content: textToSend }],
+          stream: true,
         }),
       });
 
-      const json = await res.json();
-
       if (!res.ok) {
-        throw new Error(json?.error?.message || `Request failed with status ${res.status}`);
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `Request failed with status ${res.status}`);
       }
 
-      const text = json?.choices?.[0]?.message?.content || "No response generated.";
+      setData(prevData => [...prevData, { role: "ai", content: "" }]);
+      setLoading(false);
 
-      setData(prevData => [
-        ...prevData,
-        {
-          role: "ai",
-          content: text
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(data);
+            const delta = parsed.choices?.[0]?.delta?.content || "";
+            if (delta) {
+              accumulated += delta;
+              setData(prevData => {
+                const updated = [...prevData];
+                updated[updated.length - 1] = { role: "ai", content: accumulated };
+                return updated;
+              });
+            }
+          } catch {
+            // skip malformed chunks
+          }
         }
-      ]);
+      }
 
     } catch (error) {
-      console.error("Gemini Error:", error);
+      console.error("API Error:", error);
       let errorMessage = "Something went wrong.";
 
       if (error.message?.toLowerCase().includes("api key") || error.message?.includes("missing")) {
@@ -94,13 +120,7 @@ const App = () => {
         errorMessage = error.message;
       }
 
-      setData(prevData => [
-        ...prevData,
-        {
-          role: "ai",
-          content: errorMessage
-        }
-      ]);
+      setData(prevData => [...prevData, { role: "ai", content: errorMessage }]);
 
     } finally {
       setLoading(false);
