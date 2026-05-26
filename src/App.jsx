@@ -108,9 +108,15 @@ const App = () => {
     getResponse(suggestionText);
   };
 
+  const handleNewChat = () => {
+    setData([]);
+    setPrompt("");
+    setScreen(1);
+  };
+
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden bg-black text-white">
-      <Navbar />
+      <Navbar onNewChat={handleNewChat} />
 
       {/* MAIN CHAT */}
       <div className="flex-1 overflow-y-auto no-scrollbar w-full max-w-4xl mx-auto px-4 md:px-6">
