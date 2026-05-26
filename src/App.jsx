@@ -55,9 +55,8 @@ const App = () => {
 
       const ai = new GoogleGenAI({ apiKey: targetApiKey });
 
-      // FIX: Clean production-stable model mapping matching modern SDK standards
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         contents: textToSend,
       });
 
