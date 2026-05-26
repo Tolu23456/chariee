@@ -59,7 +59,7 @@ const App = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-4-scout:free",
+          model: "openai/gpt-oss-120b:free",
           messages: [{ role: "user", content: textToSend }],
         }),
       });
