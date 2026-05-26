@@ -60,7 +60,13 @@ const App = () => {
         },
         body: JSON.stringify({
           model: "openai/gpt-oss-120b:free",
-          messages: [{ role: "user", content: textToSend }],
+          messages: [
+            {
+              role: "system",
+              content: "You are Chariee, a helpful and friendly AI assistant. Always refer to yourself as Chariee, never as ChatGPT or any other AI name."
+            },
+            { role: "user", content: textToSend }
+          ],
           stream: true,
         }),
       });
