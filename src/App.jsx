@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import "./index.css"
 import Navbar from './components/Navbar'
-import { GoogleGenAI } from "@google/genai";
 import { BeatLoader } from "react-spinners";
 import Markdown from 'react-markdown'
 import { RiComputerFill } from "react-icons/ri";
@@ -47,23 +46,31 @@ const App = () => {
     setLoading(true);
 
     try {
-      const targetApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
-      if (!targetApiKey) {
-        throw new Error("API Key is missing. Please set VITE_GEMINI_API_KEY in your environment.");
+      if (!apiKey) {
+        throw new Error("API Key is missing. Please set VITE_OPENROUTER_API_KEY in your environment.");
       }
 
-      const ai = new GoogleGenAI({ apiKey: targetApiKey });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: textToSend,
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "meta-llama/llama-4-scout:free",
+          messages: [{ role: "user", content: textToSend }],
+        }),
       });
 
-      const text =
-        response?.text ||
-        response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "No response generated.";
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error?.message || `Request failed with status ${res.status}`);
+      }
+
+      const text = json?.choices?.[0]?.message?.content || "No response generated.";
 
       setData(prevData => [
         ...prevData,
@@ -77,18 +84,14 @@ const App = () => {
       console.error("Gemini Error:", error);
       let errorMessage = "Something went wrong.";
 
-      // Detailed accurate state reporting prevents fake 429 loops
-      if (error.status === 429 || error.message?.includes("429")) {
-        errorMessage = "Gemini API limit reached. Please wait a minute and try again.";
-      }
-      else if (error.message?.toLowerCase().includes("api key") || error.message?.includes("missing")) {
-        errorMessage = "Invalid or missing Gemini API key. Check your VITE_GEMINI_API_KEY environment variable.";
-      }
-      else if (error.message?.toLowerCase().includes("fetch") || error.message?.toLowerCase().includes("network")) {
+      if (error.message?.toLowerCase().includes("api key") || error.message?.includes("missing")) {
+        errorMessage = "Invalid or missing API key. Check your VITE_OPENROUTER_API_KEY secret.";
+      } else if (error.message?.toLowerCase().includes("rate limit") || error.message?.includes("429")) {
+        errorMessage = "Rate limit reached. Please wait a moment and try again.";
+      } else if (error.message?.toLowerCase().includes("fetch") || error.message?.toLowerCase().includes("network")) {
         errorMessage = "Network error. Check your internet connection.";
-      }
-      else if (error.message) {
-        errorMessage = error.message; // Yield exact system failure descriptions directly
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       setData(prevData => [
