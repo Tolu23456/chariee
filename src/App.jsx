@@ -3,9 +3,64 @@ import "./index.css"
 import Navbar from './components/Navbar'
 import { BeatLoader } from "react-spinners";
 import Markdown from 'react-markdown'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { RiComputerFill } from "react-icons/ri";
 import { GiOpenBook, GiWhiteBook } from 'react-icons/gi';
 import { FaBloggerB } from 'react-icons/fa';
+import { IoCopyOutline, IoCheckmarkOutline } from 'react-icons/io5';
+
+function CodeBlock({ language, children }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-xl overflow-hidden my-3 border border-zinc-700 text-sm">
+      <div className="flex items-center justify-between bg-zinc-800 px-4 py-2">
+        <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+          {language || "code"}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors text-xs"
+        >
+          {copied ? <IoCheckmarkOutline className="text-green-400" /> : <IoCopyOutline />}
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        language={language || "text"}
+        style={oneDark}
+        customStyle={{ margin: 0, borderRadius: 0, background: "#1a1a2e", fontSize: "0.85rem" }}
+        showLineNumbers
+      >
+        {children}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
+const markdownComponents = {
+  code({ node, inline, className, children, ...props }) {
+    const match = /language-(\w+)/.exec(className || "");
+    const language = match ? match[1] : "";
+    const code = String(children).replace(/\n$/, "");
+
+    if (!inline && (match || code.includes("\n"))) {
+      return <CodeBlock language={language}>{code}</CodeBlock>;
+    }
+    return (
+      <code className="bg-zinc-800 text-blue-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 const App = () => {
   const [screen, setScreen] = useState(1);
@@ -212,7 +267,7 @@ const App = () => {
                           {isUser ? "User" : "Chariee.ai"}
                         </p>
                         <div className="prose prose-invert max-w-none text-sm md:text-base">
-                          <Markdown>{item.content}</Markdown>
+                          <Markdown components={markdownComponents}>{item.content}</Markdown>
                         </div>
                       </div>
                     </div>
