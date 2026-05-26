@@ -247,44 +247,41 @@ const App = () => {
               </div>
             </div>
           ) : (
-            <div className="w-full flex flex-col gap-4 md:gap-5 py-4 md:py-8">
-              {
-                data.map((item, index) => {
-                  const isUser = item.role === "user";
-                  return (
-                    <div
-                      key={index}
-                      className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 md:px-5 md:py-4 text-sm md:text-base leading-relaxed shadow-sm ${
-                          isUser
-                            ? 'bg-blue-600 text-white rounded-br-none'
-                            : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-bl-none'
-                        }`}
-                      >
-                        <p className='text-[10px] md:text-[11px] uppercase tracking-wider font-bold mb-1 opacity-60'>
-                          {isUser ? "User" : "Chariee.ai"}
-                        </p>
-                        <div className="prose prose-invert max-w-none text-sm md:text-base">
-                          <Markdown components={markdownComponents}>{item.content}</Markdown>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
-              }
-
-              {/* LOADER */}
-              {
-                loading && (
-                  <div className="flex justify-start pl-2">
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 md:px-5 md:py-4 rounded-bl-none">
-                      <BeatLoader size={8} color='#3b82f6' />
+            <div className="w-full flex flex-col py-4 md:py-6">
+              {data.map((item, index) => {
+                const isUser = item.role === "user";
+                return isUser ? (
+                  <div key={index} className="flex justify-end px-2 py-2">
+                    <div className="max-w-[75%] md:max-w-[60%] bg-zinc-700 text-white text-sm md:text-base leading-relaxed rounded-3xl px-5 py-3">
+                      {item.content}
                     </div>
                   </div>
-                )
-              }
+                ) : (
+                  <div key={index} className="flex items-start gap-3 px-2 py-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold mt-0.5">
+                      C
+                    </div>
+                    <div className="flex-1 min-w-0 text-zinc-100 text-sm md:text-base leading-relaxed">
+                      <p className="text-xs font-semibold text-zinc-400 mb-1">Chariee</p>
+                      <div className="prose prose-invert max-w-none text-sm md:text-base">
+                        <Markdown components={markdownComponents}>{item.content}</Markdown>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* LOADER */}
+              {loading && (
+                <div className="flex items-start gap-3 px-2 py-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                    C
+                  </div>
+                  <div className="flex items-center h-8">
+                    <BeatLoader size={7} color='#a1a1aa' />
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
           )
