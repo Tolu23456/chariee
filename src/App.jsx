@@ -56,7 +56,7 @@ const App = () => {
       const ai = new GoogleGenAI({ apiKey: targetApiKey });
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-1.5-flash-8b",
         contents: textToSend,
       });
 
