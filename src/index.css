@@ -2,12 +2,20 @@
 
 @layer base {
   html, body {
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     background-color: #000000;
     color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

@@ -47,12 +47,10 @@ const App = () => {
     setLoading(true);
 
     try {
-      // Dynamic runtime configuration to evade build compilation locks
-      const targetApiKey = import.meta.env.VITE_GEMINI_API_KEY || 
-        (typeof process !== 'undefined' ? process.env.VITE_GEMINI_API_KEY : undefined);
+      const targetApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
       if (!targetApiKey) {
-        throw new Error("API Key is missing. Check your Vercel Environment Variables setup.");
+        throw new Error("API Key is missing. Please set VITE_GEMINI_API_KEY in your environment.");
       }
 
       const ai = new GoogleGenAI({ apiKey: targetApiKey });
@@ -85,7 +83,7 @@ const App = () => {
         errorMessage = "Gemini API limit reached. Please wait a minute and try again.";
       }
       else if (error.message?.toLowerCase().includes("api key") || error.message?.includes("missing")) {
-        errorMessage = "Invalid or missing Gemini API key configuration on Vercel.";
+        errorMessage = "Invalid or missing Gemini API key. Check your VITE_GEMINI_API_KEY environment variable.";
       }
       else if (error.message?.toLowerCase().includes("fetch") || error.message?.toLowerCase().includes("network")) {
         errorMessage = "Network error. Check your internet connection.";
